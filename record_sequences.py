@@ -6,7 +6,7 @@ from mediapipe.tasks.python import vision
 import os
 
 # ===== CONFIG =====
-LABEL = "abnormal"   # change to "abnormal" when recording abnormal activity
+LABEL = "normal"   # change to "abnormal" when recording abnormal activity
 SEQUENCE_LENGTH = 30
 SAVE_PATH = f"dataset/{LABEL}"
 MODEL_PATH = "pose_landmarker.task"
