@@ -7,7 +7,6 @@ from mediapipe.tasks.python import vision
 from collections import deque
 import time
 
-# ===== CONFIG =====
 MODEL_PATH = "models/activity_model.h5"
 POSE_MODEL_PATH = "pose_landmarker.task"
 SEQUENCE_LENGTH = 20
