@@ -1,53 +1,53 @@
 import cv2
 import numpy as np
-import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
+import tensorflow as tf
+import tensorflow_hub as hub
 import os
 
 # ===== CONFIG =====
-LABEL = "normal"   # change to "abnormal" when recording abnormal activity
+LABEL = "abnormal"   # change to "abnormal" when recording abnormal activity
 SEQUENCE_LENGTH = 30
 SAVE_PATH = f"dataset/{LABEL}"
-MODEL_PATH = "pose_landmarker.task"
 
 os.makedirs(SAVE_PATH, exist_ok=True)
 
-# ===== LOAD MODEL =====
-base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
-options = vision.PoseLandmarkerOptions(
-    base_options=base_options,
-    running_mode=vision.RunningMode.VIDEO
-)
-detector = vision.PoseLandmarker.create_from_options(options)
+# ===== LOAD MOVENET MODEL =====
+print("Loading MoveNet model...")
+model = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/4")
+movenet = model.signatures['serving_default']
 
+# ===== CAMERA =====
 cap = cv2.VideoCapture(0)
-timestamp = 0
+
 sequence = []
 sequence_count = 0
 
-print("Press 's' to start recording a sequence")
+print("Press 's' to start recording")
 print("Press 'q' to quit")
+
+recording = False
 
 while True:
     ret, frame = cap.read()
     if not ret:
         break
 
-    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    mp_image = mp.Image(
-        image_format=mp.ImageFormat.SRGB,
-        data=rgb
-    )
+    display_frame = frame.copy()
 
-    result = detector.detect_for_video(mp_image, timestamp)
-    timestamp += 1
+    # Resize for MoveNet
+    img = cv2.resize(frame, (192, 192))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    if result.pose_landmarks:
-        landmarks = []
-        for lm in result.pose_landmarks[0]:
-            landmarks.extend([lm.x, lm.y, lm.z])
+    input_img = tf.expand_dims(img, axis=0)
+    input_img = tf.cast(input_img, dtype=tf.int32)
 
+    outputs = movenet(input_img)
+    keypoints = outputs['output_0'].numpy()
+
+    # Extract x,y coordinates
+    landmarks = keypoints[0][0][:, :2].flatten()
+
+    if recording:
         sequence.append(landmarks)
 
         if len(sequence) == SEQUENCE_LENGTH:
@@ -56,12 +56,25 @@ while True:
             )
             np.save(file_path, np.array(sequence))
             print(f"Saved sequence {sequence_count}")
+
             sequence = []
             sequence_count += 1
+            recording = False
 
-    cv2.imshow("Recording", frame)
+    # Display status
+    status_text = "Recording..." if recording else "Press S to record"
+    cv2.putText(display_frame, status_text, (30, 40),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+
+    cv2.imshow("Recording", display_frame)
 
     key = cv2.waitKey(1) & 0xFF
+
+    if key == ord('s'):
+        print("Started recording sequence")
+        recording = True
+        sequence = []
+
     if key == ord('q'):
         break
 
