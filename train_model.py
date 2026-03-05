@@ -3,20 +3,17 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-# ===== CONFIG =====
 NORMAL_PATH = "dataset/normal"
 ABNORMAL_PATH = "dataset/abnormal"
 
 X = []
 y = []
 
-# ===== LOAD NORMAL DATA =====
 for file in os.listdir(NORMAL_PATH):
     data = np.load(os.path.join(NORMAL_PATH, file))
     X.append(data)
     y.append(0)
 
-# ===== LOAD ABNORMAL DATA =====
 import os
 import numpy as np
 import tensorflow as tf
@@ -30,7 +27,6 @@ y = []
 
 EXPECTED_SHAPE = (30,34)
 
-# NORMAL
 for file in os.listdir(NORMAL_PATH):
     data = np.load(os.path.join(NORMAL_PATH,file))
 
@@ -41,7 +37,6 @@ for file in os.listdir(NORMAL_PATH):
     X.append(data)
     y.append(0)
 
-# ABNORMAL
 for file in os.listdir(ABNORMAL_PATH):
     data = np.load(os.path.join(ABNORMAL_PATH,file))
 
@@ -58,7 +53,6 @@ y = np.array(y)
 print("Dataset shape:",X.shape)
 print("Labels shape:",y.shape)
 
-# ===== TRAIN TEST SPLIT =====
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
