@@ -58,7 +58,6 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# ===== MODEL =====
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(30,34)),
 
@@ -79,7 +78,6 @@ model.compile(
 
 model.summary()
 
-# ===== TRAIN =====
 model.fit(
     X_train, y_train,
     epochs=30,
@@ -87,7 +85,6 @@ model.fit(
     validation_data=(X_test, y_test)
 )
 
-# ===== TEST =====
 loss, accuracy = model.evaluate(X_test, y_test)
 print("Test Accuracy:", accuracy)
 
