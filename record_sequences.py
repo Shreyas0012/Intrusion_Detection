@@ -4,19 +4,16 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import os
 
-# ===== CONFIG =====
-LABEL = "abnormal"   # change to "abnormal" when recording abnormal activity
+LABEL = "abnormal"   
 SEQUENCE_LENGTH = 30
 SAVE_PATH = f"dataset/{LABEL}"
 
 os.makedirs(SAVE_PATH, exist_ok=True)
 
-# ===== LOAD MOVENET MODEL =====
 print("Loading MoveNet model...")
 model = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/4")
 movenet = model.signatures['serving_default']
 
-# ===== CAMERA =====
 cap = cv2.VideoCapture(0)
 
 sequence = []
@@ -34,7 +31,6 @@ while True:
 
     display_frame = frame.copy()
 
-    # Resize for MoveNet
     img = cv2.resize(frame, (192, 192))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -44,7 +40,7 @@ while True:
     outputs = movenet(input_img)
     keypoints = outputs['output_0'].numpy()
 
-    # Extract x,y coordinates
+
     landmarks = keypoints[0][0][:, :2].flatten()
 
     if recording:
@@ -61,7 +57,7 @@ while True:
             sequence_count += 1
             recording = False
 
-    # Display status
+
     status_text = "Recording..." if recording else "Press S to record"
     cv2.putText(display_frame, status_text, (30, 40),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
