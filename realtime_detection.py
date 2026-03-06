@@ -5,21 +5,17 @@ import tensorflow_hub as hub
 from collections import deque
 import time
 
-# ===== CONFIG =====
 MODEL_PATH = "models/activity_model.h5"
 SEQUENCE_LENGTH = 30
 THRESHOLD = 0.6
 
-# ===== LOAD MODEL =====
 model = tf.keras.models.load_model(MODEL_PATH)
 
-# ===== LOAD MOVENET =====
 movenet_model = hub.load(
     "https://tfhub.dev/google/movenet/singlepose/lightning/4"
 )
 movenet = movenet_model.signatures['serving_default']
 
-# ===== CAMERA =====
 cap = cv2.VideoCapture(0)
 
 sequence_buffer = deque(maxlen=SEQUENCE_LENGTH)
@@ -38,7 +34,6 @@ while True:
 
     video_buffer.append(frame.copy())
 
-    # ===== MOVENET POSE =====
     img = cv2.resize(frame,(192,192))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
